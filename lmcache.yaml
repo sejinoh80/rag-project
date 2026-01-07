@@ -1,0 +1,16 @@
+cat > lmcache.yaml <<'EOF'
+chunk_size: 256
+local_cpu: true
+max_local_cpu_size: 64.0          # GB (CPU DRAM 핫 캐시)
+local_disk: "file:///mnt/nvme0n1/lmcache_kv"   # SSD 경로
+max_local_disk_size: 1000.0       # GB (SSD 콜드 캐시)
+EOF
+
+export LMCACHE_CONFIG_FILE=$PWD/lmcache.yaml
+export LMCACHE_USE_EXPERIMENTAL=True   # 디스크 오프로딩 필수
+
+vllm serve <MODEL_NAME> \
+  --port 8000 \
+  --kv-offloading-backend lmcache \
+  --kv-offloading-size 64 \
+  --disable-hybrid-kv-cache-manager
